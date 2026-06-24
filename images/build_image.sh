@@ -14,7 +14,7 @@ fi
 
 echo "Construyendo imagen Moodle ${MOODLE_VERSION} (Tag: ${MOODLE_TAG}) con PHP ${PHP_VERSION}..."
 
-docker build \
+docker build --no-cache \
     --build-arg moodle_version=${MOODLE_VERSION} \
     --build-arg moodle_tag=${MOODLE_TAG} \
     --build-arg php_version=${PHP_VERSION} \

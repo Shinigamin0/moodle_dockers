@@ -1,23 +1,21 @@
 #!/bin/bash
+set -e # Protección contra errores silenciosos
 
-# Asegurar que no haya prompts interactivos que detengan el build
 export DEBIAN_FRONTEND=noninteractive
 
 echo "Instalando Apache2..."
 
-# 1. El flag -y es obligatorio en Docker para automatizar la instalación
 apt-get install -y apache2
 
-# 2. Habilitar módulos de Apache clave para Moodle y seguridad
-a2enmod rewrite   # Necesario para que funcionen las "URLs limpias" en Moodle
-a2enmod headers   # Permite configurar cabeceras de seguridad en el virtual host
+a2enmod rewrite
+a2enmod headers
 
-# 3. Redirigir los logs a la salida estándar (Buenas prácticas de Docker)
-# Esto permite que el comando `docker logs <nombre_contenedor>` funcione correctamente
+# Ajuste crítico para Moodle 5.0+: Apuntar el DocumentRoot a la carpeta public/
+sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+
 ln -sf /dev/stdout /var/log/apache2/access.log
 ln -sf /dev/stderr /var/log/apache2/error.log
 
-# 4. Limpieza profunda para reducir el peso de la imagen
 apt-get clean
 rm -rf /var/lib/apt/lists/*
 

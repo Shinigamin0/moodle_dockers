@@ -31,6 +31,7 @@ moodle_tag="5.0.2"
 app_name=$moodle_1_name
 app_user="administrator"
 app_password="administrator"
+app_email="admin@uniminuto.edu" 
 
 phpmyadmin_container_name="phpmyadmin_moodle"
 phpmyadmin_port=8080

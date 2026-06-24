@@ -6,26 +6,35 @@ ARG php_version
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /var/www/
+# 1. Área de trabajo temporal para los scripts de construcción
+WORKDIR /tmp/scripts/
 
-ADD install_tools.sh .
-ADD install_php.sh .
-ADD install_apache.sh .
-ADD download_moodle.sh .
-ADD set_permissions.sh .
-ADD install_moodle.sh .
+# Copiar todos los scripts
+ADD *.sh ./
+RUN sed -i 's/\r$//' ./*.sh && chmod +x ./*.sh
 
-RUN chmod +x ./*.sh
-
+# 2. Ejecutar instalaciones
 RUN ./install_tools.sh
 RUN ./install_php.sh ${php_version}
 RUN ./install_apache.sh
-RUN ./download_moodle.sh file ${moodle_version} ${moodle_tag}
 
+# 3. Descargar Moodle en su ruta definitiva
+WORKDIR /var/www/
+RUN /tmp/scripts/download_moodle.sh file ${moodle_version} ${moodle_tag}
 ADD info.php ./html/info.php
+
+# Crear directorio de datos
 RUN mkdir -p /var/www/moodledata
 
-RUN ./set_permissions.sh
+# 4. Mover los scripts de tiempo de ejecución a una ruta segura del sistema
+RUN mv /tmp/scripts/install_moodle.sh /usr/local/bin/install_moodle.sh
+RUN mv /tmp/scripts/set_permissions.sh /usr/local/bin/set_permissions.sh
+
+# 5. Aplicar permisos seguros iniciales
+RUN /usr/local/bin/set_permissions.sh
+
+# 6. Eliminar todos los scripts temporales de construcción para no dejar rastro
+RUN rm -rf /tmp/scripts/
 
 EXPOSE 80
 CMD ["apachectl", "-D", "FOREGROUND"]

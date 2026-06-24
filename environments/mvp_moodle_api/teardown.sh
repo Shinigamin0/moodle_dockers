@@ -40,3 +40,5 @@ echo "Recreando estructura de carpetas..."
 mkdir -p app data db data1 data2 phpmyadmin
 
 echo "¡Ambiente limpio y listo para un nuevo despliegue!"
+
+docker rmi moodle:502

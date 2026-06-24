@@ -9,6 +9,7 @@ DB_PORT=$5
 APP_URL=$6
 ADMIN_USER=$7
 ADMIN_PASS=$8
+ADMIN_EMAIL=$9
 
 echo "Configurando Moodle con los siguientes parámetros:"
 echo "DB_HOST: ${DB_HOST}"
@@ -29,7 +30,7 @@ echo "APP_URL: ${APP_URL}"
     --summary="Plataforma principal" \
     --adminuser="${ADMIN_USER}" \
     --adminpass="${ADMIN_PASS}" \
-    --adminemail="admin@uniminuto.edu" \
+    --adminemail="${ADMIN_EMAIL}" \
     --non-interactive \
     --agree-license
 

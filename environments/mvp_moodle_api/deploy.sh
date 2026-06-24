@@ -39,24 +39,31 @@ echo "Instalando Moodle Principal"
 
 if [ "$(docker container inspect -f '{{.State.Status}}' $moodle_1_app_container_name)" == "running" ];
 then
+    echo "Desbloqueando permisos temporalmente para la instalación..."
+    docker exec -it $moodle_1_app_container_name chown -R www-data:www-data /var/www/html/
+
     echo "Iniciando proceso de instalación..."
     
-    docker exec -it $moodle_1_app_container_name /bin/bash -c "su - www-data -s /bin/bash -c '/var/www/install_moodle.sh $moodle_db_1_container_name $moodle_db_name $moodle_db_user $moodle_db_password $moodle_db_port http://localhost:$moodle_app_1_port $app_user $app_password'"
+    # Envolvemos el comando en un IF para abortar todo si Moodle falla al instalarse
+    if ! docker exec -it $moodle_1_app_container_name /bin/bash -c "su - www-data -s /bin/bash -c '/usr/local/bin/install_moodle.sh $moodle_db_1_container_name $moodle_db_name $moodle_db_user $moodle_db_password $moodle_db_port http://localhost:$moodle_app_1_port $app_user $app_password $app_email'"; then
+        echo "❌ ERROR: La instalación de Moodle falló. Abortando despliegue para evitar base de datos corrupta."
+        exit 1
+    fi
     
-    docker exec -it $moodle_1_app_container_name /bin/bash -c '/var/www/set_permissions.sh'
+    echo "Restaurando blindaje de permisos seguros..."
+    docker exec -it $moodle_1_app_container_name /usr/local/bin/set_permissions.sh
 else
-    echo "$moodle_1_app_container_name aun no arranca..."
+    echo "❌ ERROR: $moodle_1_app_container_name aun no arranca..."
     exit 1
 fi
 
-echo "Creando usuario API (solo lectura) en la base de datos..."
+sleep 15 
 
+echo "Creando usuario API (solo lectura) en la base de datos..."
+# Simplificado a SELECT global. Sin dependencia de tablas que puedan romper el script.
 docker exec -i $moodle_db_1_container_name mysql -uroot -p"$mysql_root_password" -e "
     CREATE USER IF NOT EXISTS '${moodle_db_readonly_user}'@'%' IDENTIFIED BY '${moodle_db_readonly_password}';
     GRANT SELECT ON ${moodle_db_name}.* TO '${moodle_db_readonly_user}'@'%';
-    GRANT INSERT, UPDATE, DELETE ON ${moodle_db_name}.mdl_sessions TO '${moodle_db_readonly_user}'@'%';
-    GRANT INSERT, UPDATE, DELETE ON ${moodle_db_name}.mdl_logstore_standard_log TO '${moodle_db_readonly_user}'@'%';
-    GRANT INSERT, UPDATE, DELETE ON ${moodle_db_name}.mdl_external_tokens TO '${moodle_db_readonly_user}'@'%';
     FLUSH PRIVILEGES;
 "
 
@@ -64,14 +71,11 @@ echo "Preparando configuración de Enrutamiento de Base de Datos para el nodo AP
 
 docker cp $moodle_1_app_container_name:/var/www/html/config.php ./config_api.php
 
-# 2. Ajustamos la URL base para que apunte al puerto/dominio de la API
-sed -i "s|:$moodle_app_1_port|:$moodle_app_2_port|g" ./config_api.php
+sed -i.bak "s|:$moodle_app_1_port|:$moodle_app_2_port|g" ./config_api.php
+rm -f ./config_api.php.bak
 
 cat << EOF >> ./config_api.php
 
-// ========================================================================
-// CONFIGURACIÓN DE REPLICA DE LECTURA (API NODE)
-// ========================================================================
 \$CFG->dboptions['readonly'] = [
     'instance' => [
         [
