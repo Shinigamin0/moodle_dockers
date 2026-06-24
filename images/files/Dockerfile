@@ -13,6 +13,7 @@ ADD install_php.sh .
 ADD install_apache.sh .
 ADD download_moodle.sh .
 ADD set_permissions.sh .
+ADD install_moodle.sh .
 
 RUN chmod +x ./*.sh
 

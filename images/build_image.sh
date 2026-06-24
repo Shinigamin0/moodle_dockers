@@ -18,4 +18,4 @@ docker build \
     --build-arg moodle_version=${MOODLE_VERSION} \
     --build-arg moodle_tag=${MOODLE_TAG} \
     --build-arg php_version=${PHP_VERSION} \
-    -t moodle:${MOODLE_VERSION} ./${MOODLE_VERSION}
+    -t moodle:${MOODLE_VERSION} ./files
