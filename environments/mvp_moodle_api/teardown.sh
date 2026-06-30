@@ -11,8 +11,8 @@ docker stop \
     $moodle_1_app_container_name \
     $moodle_2_app_container_name \
     $moodle_db_1_container_name \
-    phpmyadmin_rolado_db \
-    phpmyadmin_posgrado_db 2>/dev/null || true
+    $moodle_db_2_container_name \
+    $phpmyadmin_container_name 2>/dev/null || true
 
 # 2. Eliminar contenedores
 echo "Eliminando contenedores..."
@@ -20,8 +20,8 @@ docker rm \
     $moodle_1_app_container_name \
     $moodle_2_app_container_name \
     $moodle_db_1_container_name \
-    phpmyadmin_rolado_db \
-    phpmyadmin_posgrado_db 2>/dev/null || true
+    $moodle_db_2_container_name \
+    $phpmyadmin_container_name 2>/dev/null || true
 
 # 3. Eliminar la red compartida
 echo "Eliminando red de Docker..."
@@ -41,4 +41,4 @@ mkdir -p app data db data1 data2 phpmyadmin
 
 echo "¡Ambiente limpio y listo para un nuevo despliegue!"
 
-docker rmi moodle:502
+docker rmi moodle:$moodle_version 2>/dev/null || true
