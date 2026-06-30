@@ -1,3 +1,6 @@
+#!/bin/bash
+source ./conf
+
 echo "Desplegando phpMyAdmin para administración de Base de Datos..."
 
 docker run \
