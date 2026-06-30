@@ -84,13 +84,13 @@ then
     docker exec -i $moodle_1_app_container_name chown -R www-data:www-data /var/www/html/
 
     echo "Iniciando proceso de instalación..."
-    
+
     # Envolvemos el comando en un IF para abortar todo si Moodle falla al instalarse
     if ! docker exec -i $moodle_1_app_container_name /bin/bash -c "su - www-data -s /bin/bash -c '/usr/local/bin/install_moodle.sh $moodle_db_1_container_name $moodle_db_name $moodle_db_user $moodle_db_password $moodle_db_port http://localhost:$moodle_app_1_port $app_user $app_password $app_email'"; then
         echo "❌ ERROR: La instalación de Moodle falló. Abortando despliegue para evitar base de datos corrupta."
         exit 1
     fi
-    
+
     echo "Restaurando blindaje de permisos seguros..."
     docker exec -i $moodle_1_app_container_name /usr/local/bin/set_permissions.sh
 else
@@ -98,7 +98,7 @@ else
     exit 1
 fi
 
-sleep 15 
+sleep 15
 
 echo "Creando usuario API (solo lectura) en la base de datos..."
 # Simplificado a SELECT global. Sin dependencia de tablas que puedan romper el script.
