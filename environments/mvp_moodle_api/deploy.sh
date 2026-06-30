@@ -21,7 +21,7 @@ docker run -d --name $moodle_db_1_container_name \
   -e MYSQL_DATABASE="$moodle_db_name" \
   -e MYSQL_USER="$moodle_db_user" \
   -e MYSQL_PASSWORD="$moodle_db_password" \
-  mysql:8.4.10 \
+  $mysql_image_name \
   --server-id=1 \
   --log-bin=mysql-bin \
   --enforce-gtid-consistency=ON \
@@ -42,7 +42,7 @@ echo "Desplegando MySQL Replica (Lectura en tiempo real)..."
 docker run -d --name $moodle_db_2_container_name \
   --network $moodle_docker_network \
   -e MYSQL_ROOT_PASSWORD="$mysql_root_password" \
-  mysql:8.4.10 \
+  $mysql_image_name \
   --server-id=2 \
   --enforce-gtid-consistency=ON \
   --gtid-mode=ON
@@ -124,7 +124,7 @@ cat << EOF >> ./config_api.php
         [
             'dbhost' => '${moodle_db_2_container_name}',
             'dbport' => '${moodle_db_port}',
-            'dbuser' => '${moodle_db_readonly_user}',   
+            'dbuser' => '${moodle_db_readonly_user}',
             'dbpass' => '${moodle_db_readonly_password}'
         ]
     ]
