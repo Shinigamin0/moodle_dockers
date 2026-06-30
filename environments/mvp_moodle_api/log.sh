@@ -1,24 +1,26 @@
-docker exec -it principal_db mysql -uroot -prootPassword -e "
-    SET GLOBAL log_output = 'TABLE';
-    SET GLOBAL general_log = 'ON';
-"
+#!/bin/bash
+source ./conf
 
-docker exec -it principal_db mysql -uroot -prootPassword -e "
-    CREATE USER IF NOT EXISTS 'readonly'@'%' IDENTIFIED BY 'Password';
-    GRANT SELECT ON moodle.* TO 'readonly'@'%';
-    FLUSH PRIVILEGES;
-"
+SEP="═══════════════════════════════════════════════════════════════════"
 
-docker exec -it principal_db mysql -uroot -prootPassword -e "
-    SELECT event_time, argument
-    FROM mysql.general_log
-    WHERE user_host LIKE 'user%' AND command_type = 'Query'
-    ORDER BY event_time DESC LIMIT 10;
-"
+QUERY="SELECT event_time, user_host, CONVERT(argument USING utf8) AS query
+FROM mysql.general_log
+WHERE command_type = 'Query'
+ORDER BY event_time DESC
+LIMIT 30;"
 
-docker exec -it principal_db mysql -uroot -prootPassword -e "
-    SELECT event_time, CONVERT(argument USING utf8) AS query
-    FROM mysql.general_log
-    WHERE user_host LIKE 'readonly%' AND command_type = 'Query'
-    ORDER BY event_time DESC LIMIT 10;
-"
+echo ""
+echo "$SEP"
+echo "  MOTOR DE ESCRITURA: $moodle_db_1_container_name"
+echo "$SEP"
+docker exec -i $moodle_db_1_container_name \
+    mysql -uroot -p"$mysql_root_password" --table -e "$QUERY" 2>/dev/null
+
+echo ""
+echo "$SEP"
+echo "  MOTOR DE LECTURA:   $moodle_db_2_container_name"
+echo "$SEP"
+docker exec -i $moodle_db_2_container_name \
+    mysql -uroot -p"$mysql_root_password" --table -e "$QUERY" 2>/dev/null
+
+echo ""
