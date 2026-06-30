@@ -13,6 +13,7 @@ moodle_docker_network="mvp_moodle_api_network"
 mysql_image_name="mysql:8.4.10"
 
 mysql_root_password="rootPassword"
+mysql_replication_password="repl_password"
 
 moodle_db_name='moodle'
 moodle_db_user='user'

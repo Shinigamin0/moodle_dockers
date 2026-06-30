@@ -33,7 +33,7 @@ sleep 15
 echo "Configurando usuario de replicación en el Master..."
 
 docker exec -i $moodle_db_1_container_name mysql -uroot -p"$mysql_root_password" -e "
-  CREATE USER IF NOT EXISTS 'replicator'@'%' IDENTIFIED BY 'repl_password';
+  CREATE USER IF NOT EXISTS 'replicator'@'%' IDENTIFIED BY '$mysql_replication_password';
   GRANT REPLICATION SLAVE ON *.* TO 'replicator'@'%';
   FLUSH PRIVILEGES;
 "
@@ -53,7 +53,7 @@ sleep 15
 echo "Vinculando la Replica con el Master..."
 
 docker exec -i $moodle_db_2_container_name mysql -uroot -p"$mysql_root_password" -e "
-  CHANGE REPLICATION SOURCE TO SOURCE_HOST='$moodle_db_1_container_name', SOURCE_USER='replicator', SOURCE_PASSWORD='repl_password', SOURCE_AUTO_POSITION=1, GET_SOURCE_PUBLIC_KEY=1;
+  CHANGE REPLICATION SOURCE TO SOURCE_HOST='$moodle_db_1_container_name', SOURCE_USER='replicator', SOURCE_PASSWORD='$mysql_replication_password', SOURCE_AUTO_POSITION=1, GET_SOURCE_PUBLIC_KEY=1;
   START REPLICA;
 "
 
