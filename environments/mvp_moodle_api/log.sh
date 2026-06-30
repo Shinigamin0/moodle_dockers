@@ -14,13 +14,13 @@ echo "$SEP"
 echo "  MOTOR DE ESCRITURA: $moodle_db_1_container_name"
 echo "$SEP"
 docker exec -i $moodle_db_1_container_name \
-    mysql -uroot -p"$mysql_root_password" --table -e "$QUERY" 2>/dev/null
+    mysql -uroot -p"$mysql_root_password" --table -e "$QUERY" 2>&1 | grep -v "Warning: Using a password"
 
 echo ""
 echo "$SEP"
 echo "  MOTOR DE LECTURA:   $moodle_db_2_container_name"
 echo "$SEP"
 docker exec -i $moodle_db_2_container_name \
-    mysql -uroot -p"$mysql_root_password" --table -e "$QUERY" 2>/dev/null
+    mysql -uroot -p"$mysql_root_password" --table -e "$QUERY" 2>&1 | grep -v "Warning: Using a password"
 
 echo ""
