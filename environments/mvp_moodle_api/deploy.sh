@@ -115,7 +115,8 @@ docker cp $moodle_1_app_container_name:/var/www/html/config.php ./config_api.php
 sed -i.bak "s|:$moodle_app_1_port|:$moodle_app_2_port|g" ./config_api.php
 rm -f ./config_api.php.bak
 
-cat << EOF >> ./config_api.php
+# Escribir el bloque readonly a un archivo temporal (bash expande las variables aquí)
+cat > /tmp/readonly_block.php << EOF
 // ========================================================================
 // CONFIGURACION DE REPLICA DE LECTURA FISICA (API NODE)
 // ========================================================================
@@ -132,7 +133,18 @@ cat << EOF >> ./config_api.php
 
 \$CFG->disablelog = true;
 \$CFG->disableupdatelogin = true;
+
 EOF
+
+# Insertar el bloque ANTES del require_once para que Moodle lo cargue al inicializar la DB
+python3 -c "
+block = open('/tmp/readonly_block.php').read()
+content = open('./config_api.php').read()
+target = \"require_once(__DIR__ . '/lib/setup.php');\"
+content = content.replace(target, block + target)
+open('./config_api.php', 'w').write(content)
+"
+rm /tmp/readonly_block.php
 
 echo "Desplegando Moodle API"
 
