@@ -1,0 +1,8 @@
+./environments/mvp_moodle_api/data1/*
+./environments/mvp_moodle_api/data2/*
+./claude/*
+./agents/*
+./remember/*
+./superpowers/*
+./skills-lock.json
+*.DS_Store*

@@ -1,3 +1,3 @@
 # moodle_dockers
-Ambiente de Moodle en contenedores con plugin de enrolments con el fin de poder probar versiones nuevas de moodle agilmente
+Ambiente de Moodle en contenedores para probar instancia de API con base de datos de lectura
 
